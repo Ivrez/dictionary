@@ -115,6 +115,10 @@ class CLI():
                     self.db.update_words(word_id, cn=upd_text)
 
                 upd_word = self.db.get_words(word_id)
+
+                word = word['word_eng'] + " " + word['word_rus'] + " " + word['word_cn']
+                upd_word = upd_word['word_eng'] + " " + upd_word['word_rus'] + " " + upd_word['word_cn']
+
                 print('\n {} \n changed to \n{}'.format(word, upd_word))
                 input()
             except Exception as err:
@@ -126,7 +130,7 @@ class CLI():
             try:
                 dictionary = self.db.get_full_dict()
                 for el in dictionary:
-                    print(el)
+                    print(el['word_eng'], " ", el['word_rus'], " ", el['word_cn'])
                 input()
                 return
             except Exception as err:
