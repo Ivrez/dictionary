@@ -131,6 +131,7 @@ class CLI():
                 dictionary = self.db.get_full_dict()
                 for el in dictionary:
                     print(el['word_eng'], " ", el['word_rus'], " ", el['word_cn'])
+
                 input()
                 return
             except Exception as err:
