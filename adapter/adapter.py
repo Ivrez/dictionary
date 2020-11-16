@@ -39,3 +39,8 @@ class Functions():
         except Exception as err:
             return str(err)
 
+    def get_random_word(self, count=1):
+        try:
+            return self.db.get_random_word(count)
+        except Exception as err:
+            return str(err)

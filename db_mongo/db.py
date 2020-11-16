@@ -33,10 +33,9 @@ class DefaultMongoDB():
         data = self.db.words.find({})
         return data
 
-    def get_random_word(self)
-        data = self.db.words.aggregate([{ '$sample': { 'size': 1 } }])
+    def get_random_word(self, count):
+        data = self.db.words.aggregate([{'$sample': {'size': count}}])
         return data
-
 
     def update_words(self, word_id, word_eng, word_rus, word_cn):
         data = {
