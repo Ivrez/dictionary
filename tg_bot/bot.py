@@ -40,33 +40,47 @@ class Form(StatesGroup):
 async def send_welcome(message: types.Message):
     await message.answer(help_message)
 
-@dp.message_handler(commands=['quiz'])
+@dp.message_handler(commands=['quiz', 'next'])
 async def quiz(message: types.Message):
-    await Form.quiz.set()
-    data = db.get_random_word(3)
+    data = db.get_random_word(6)
     quiz_words = list()
     for word in data:
         quiz_words.append(word)
-    selected_word = (quiz_words[random.randint(0, 2)])
+    selected_word = (quiz_words[random.randint(0, 5)])
 
     btn_words = list()
     for i in quiz_words:
         print(i)
-        btn_words.append(InlineKeyboardButton(i['word_eng'], callback_data='quit_btn'))
+        if i['word_eng'] == selected_word['word_eng']:
+            btn_words.append(InlineKeyboardButton(i['word_eng'], callback_data='_correct'))
+            continue
+        btn_words.append(InlineKeyboardButton(i['word_eng'], callback_data='_not_correct'))
 
     inline_kb = InlineKeyboardMarkup()
-    quit_btn = InlineKeyboardButton('quit', callback_data='quit_btn')
+    quit_btn = InlineKeyboardButton('quit', callback_data='quit')
     inline_kb.add(btn_words[0], btn_words[1], btn_words[2])
+    inline_kb.add(btn_words[3], btn_words[4], btn_words[5])
     inline_kb.add(quit_btn)
+
     await message.answer(selected_word['word_rus'], reply_markup=inline_kb)
 
-@dp.callback_query_handler(lambda c: c.data == 'quit_btn', state="*")
-async def process_callback_quit(callback_query: types.CallbackQuery, state: FSMContext):
+@dp.callback_query_handler(lambda c: c.data == '_correct', state="*")
+async def process_callback_correct(callback_query: types.CallbackQuery):
     await bot.answer_callback_query(callback_query.id)
+    await bot.send_message(callback_query.from_user.id, 'Правильно')
+    await bot.send_message(callback_query.from_user.id, '/next')
+
+@dp.callback_query_handler(lambda c: c.data == '_not_correct', state="*")
+async def process_callback_not_correct(callback_query: types.CallbackQuery):
+    await bot.answer_callback_query(callback_query.id)
+    await bot.send_message(callback_query.from_user.id, 'Вы долбоеб')
+
+@dp.callback_query_handler(lambda c: c.data == 'quit', state="*")
+async def process_callback_quit(callback_query: types.CallbackQuery, state: FSMContext):
     current_state = await state.get_state()
     if current_state is None:
-        return
-
-    logging.info('Cancelling state %r', current_state)
-    await state.finish()
-    await bot.send_message(callback_query.from_user.id, help_message)
+        await bot.send_message(callback_query.from_user.id, help_message)
+    else:
+        logging.info('Cancelling state %r', current_state)
+        await state.finish()
+        await bot.send_message(callback_query.from_user.id, help_message)
